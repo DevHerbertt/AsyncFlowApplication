@@ -12,7 +12,7 @@
 		<relativePath/> </parent>
 
 	<groupId>com.example.AsyncFlow</groupId>
-	<artifactId>demo</artifactId>
+	<artifactId>AsyncFlowApplcation</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>async-flow</name>
 	<description>Projeto com SQS + S3 + LocalStack</description>
