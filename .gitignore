@@ -1,0 +1,15 @@
+# IDE IntelliJ / Eclipse
+.idea/
+*.iml
+.vscode/
+misc.xml
+modules.xml
+vcs.xml
+
+# Local Database & Cache
+*.db
+asyncflow.db
+.localstack/
+
+# Maven Builds
+**/target/
