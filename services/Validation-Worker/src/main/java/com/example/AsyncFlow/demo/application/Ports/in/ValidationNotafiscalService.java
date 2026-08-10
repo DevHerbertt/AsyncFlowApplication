@@ -1,4 +1,4 @@
-package com.example.AsyncFlow.demo.application.Ports;
+package com.example.AsyncFlow.demo.application.Ports.in;
 
 import com.example.AsyncFlow.contracts.NotaFiscalStatus;
 import com.example.AsyncFlow.demo.Domain.Model.Item;
