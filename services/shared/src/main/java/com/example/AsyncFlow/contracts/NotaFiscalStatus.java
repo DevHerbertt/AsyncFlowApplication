@@ -5,6 +5,6 @@ public enum NotaFiscalStatus {
     VALIDADA,
     SALVA,
     CONCLUIDA,
-    Erro
+    ERRO
     
 }
