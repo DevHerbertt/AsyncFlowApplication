@@ -22,6 +22,8 @@
     </properties>
 
     <modules>
+        <module>services/shared</module>
         <module>services/nota-api</module>
+        <module>services/Validation-Worker</module>
     </modules>
 </project>
