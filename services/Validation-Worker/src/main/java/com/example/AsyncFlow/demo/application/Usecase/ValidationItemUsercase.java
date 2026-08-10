@@ -1,7 +1,7 @@
 package com.example.AsyncFlow.demo.application.Usecase;
 
 import com.example.AsyncFlow.demo.Domain.Model.Item;
-import com.example.AsyncFlow.demo.application.Ports.ValidationItem;
+import com.example.AsyncFlow.demo.application.Ports.in.ValidationItem;
 
 import java.math.BigDecimal;
 
