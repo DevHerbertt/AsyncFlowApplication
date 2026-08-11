@@ -2,9 +2,11 @@ package com.example.AsyncFlow.demo.application.Usecase;
 
 import com.example.AsyncFlow.demo.Domain.Model.Item;
 import com.example.AsyncFlow.demo.application.Ports.in.ValidationItem;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
+@Service
 public class ValidationItemUsercase implements ValidationItem {
 
     @Override

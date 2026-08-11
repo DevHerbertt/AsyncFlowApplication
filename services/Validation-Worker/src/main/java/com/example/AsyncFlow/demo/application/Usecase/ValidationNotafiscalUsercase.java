@@ -4,11 +4,13 @@ import com.example.AsyncFlow.contracts.NotaFiscalStatus;
 import com.example.AsyncFlow.demo.Domain.Model.Item;
 import com.example.AsyncFlow.demo.Domain.Model.NotaFiscal;
 import com.example.AsyncFlow.demo.application.Ports.in.ValidationNotafiscalService;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Service
 public class ValidationNotafiscalUsercase implements ValidationNotafiscalService {
 
     private final ValidationItemUsercase validationItemUsercase = new ValidationItemUsercase();
