@@ -1,23 +1,24 @@
 package com.example.AsyncFlow.demo.Domain.Model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import lombok.Builder;
-import lombok.Data;
-import org.hibernate.validator.constraints.br.CPF;
+import com.example.AsyncFlow.demo.application.Ports.Requests.NotaFiscalRequest;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
-
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Client {
 
+    private Long id;
+    private String name;
     private String email;
     private String cpf;
-    private String name;
     private String cep;
     private String password;
-    private List<NotaFiscal> notaFiscal;
-
-
+    private List<NotaFiscalRequest> requests;
 }
