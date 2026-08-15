@@ -4,6 +4,7 @@ import com.example.AsyncFlow.contracts.NotaFiscalStatus;
 import com.example.AsyncFlow.demo.Domain.Model.Item;
 import com.example.AsyncFlow.demo.Domain.Model.NotaFiscal;
 import com.example.AsyncFlow.demo.application.Ports.in.ValidationNotafiscalService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -13,7 +14,12 @@ import java.util.List;
 @Service
 public class ValidationNotafiscalUsercase implements ValidationNotafiscalService {
 
-    private final ValidationItemUsercase validationItemUsercase = new ValidationItemUsercase();
+    private final ValidationItemUsercase validationItemUsercase;
+
+    @Autowired
+    public ValidationNotafiscalUsercase(ValidationItemUsercase validationItemUsercase) {
+        this.validationItemUsercase = validationItemUsercase;
+    }
 
     @Override
     public boolean validation(NotaFiscal notaFiscal) {
