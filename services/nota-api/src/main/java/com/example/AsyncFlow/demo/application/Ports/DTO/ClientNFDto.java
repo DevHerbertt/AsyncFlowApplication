@@ -14,14 +14,8 @@ public class ClientNFDto {
     @NotBlank
     private String name;
 
-    @NotBlank
-    @Pattern(regexp = "\\d{8}", message = "CEP deve conter 8 dígitos")
-    private String cep;
-
     private String cpf;
-    private String password;
 
-    private List<NotaFiscalDto> notaFiscalDto;
 
 
 
