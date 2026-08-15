@@ -18,24 +18,26 @@ public class NotaFiscalStatusRespositoryImpl implements NotaFiscalStatusReposito
     private JpaNotaFiscalRepository repository;
 
 
-@Override
+    @Override
     public NotaFiscalStatus saveStatus(String numeroNota, NotaFiscalStatus status) {
 
         Optional<NotaFiscalEntity> notaRepository = repository.findById(numeroNota);
 
-        if (notaRepository.isPresent()) {
-            log.info("Nota Fiscal encontrada");
 
-            NotaFiscalEntity notaFiscal = notaRepository.get();
+            if (notaRepository.isPresent()){
+                log.info("Nota Fiscal encontrada");
 
-            notaFiscal.setStatus(status);
+                NotaFiscalEntity notaFiscal = notaRepository.get();
 
-            repository.save(notaFiscal);
+                notaFiscal.setStatus(status);
 
-            return status;
-        } else {
-            log.error("Nota fiscal nao encontrada");
-            throw new RuntimeException("Nota fiscal nao encontrada para o numero: " + numeroNota);
-        }
+                repository.save(notaFiscal);
+
+                return status;
+            }else {
+                log.error("Nota fiscal nao encontrada");
+            }
+
+        return null;
     }
 }
