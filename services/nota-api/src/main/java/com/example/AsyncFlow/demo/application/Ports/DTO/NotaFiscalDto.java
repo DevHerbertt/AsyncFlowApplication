@@ -1,7 +1,6 @@
 package com.example.AsyncFlow.demo.application.Ports.DTO;
 
 import com.example.AsyncFlow.demo.Domain.Model.Client;
-import com.example.AsyncFlow.demo.Domain.Model.NotaFiscalStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,5 +14,5 @@ public class NotaFiscalDto {
     private List<ItensDTO> itens;
     private LocalDateTime buyDate;
     private String Cnpj;
-    private NotaFiscalStatus status;
+    private String status;
 }
