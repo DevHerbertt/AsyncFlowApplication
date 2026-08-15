@@ -64,6 +64,12 @@
 			<artifactId>sqs</artifactId>
 		</dependency>
 
+		<!-- AWS S3 (para listar arquivos no bucket) -->
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+		</dependency>
+
 		<!-- Swagger / OpenAPI -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
