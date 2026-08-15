@@ -1,8 +1,13 @@
 package com.example.AsyncFlow.demo.application;
 
 import com.example.AsyncFlow.contracts.NotaFiscalStatus;
+import com.example.AsyncFlow.demo.infrastructure.aws.s3.S3MonitorService;
 import com.example.AsyncFlow.demo.infrastructure.aws.sqs.SqsMonitorService;
+import com.example.AsyncFlow.demo.infrastructure.persistencia.JpaClientMonitorRepository;
+import com.example.AsyncFlow.demo.infrastructure.persistencia.JpaItemMonitorRepository;
 import com.example.AsyncFlow.demo.infrastructure.persistencia.JpaNotaFiscalMonitorRepository;
+import com.example.AsyncFlow.demo.infrastructure.persistencia.entity.ClientMonitorEntity;
+import com.example.AsyncFlow.demo.infrastructure.persistencia.entity.ItemMonitorEntity;
 import com.example.AsyncFlow.demo.infrastructure.persistencia.entity.NotaFiscalMonitorEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -14,7 +19,7 @@ import java.util.Map;
 
 /**
  * Serviço de aplicação do monitor-worker.
- * Agrega dados do PostgreSQL e das filas SQS para o dashboard.
+ * Agrega dados do PostgreSQL (notas, clientes, itens), filas SQS e arquivos S3.
  */
 @Log4j2
 @Service
@@ -22,32 +27,24 @@ import java.util.Map;
 public class MonitorService {
 
     private final JpaNotaFiscalMonitorRepository notaFiscalRepository;
+    private final JpaClientMonitorRepository clientRepository;
+    private final JpaItemMonitorRepository itemRepository;
     private final SqsMonitorService sqsMonitorService;
+    private final S3MonitorService s3MonitorService;
 
-    /**
-     * Retorna todas as notas fiscais ordenadas por data (mais recentes primeiro).
-     */
     public List<NotaFiscalMonitorEntity> getAllNotas() {
         return notaFiscalRepository.findAllByOrderByBuyDateDesc();
     }
 
-    /**
-     * Retorna notas filtradas por status.
-     */
     public List<NotaFiscalMonitorEntity> getNotasByStatus(NotaFiscalStatus status) {
         return notaFiscalRepository.findByStatus(status);
     }
 
-    /**
-     * Retorna contagem de notas por status.
-     */
     public Map<String, Long> getContagemPorStatus() {
         Map<String, Long> contagem = new LinkedHashMap<>();
-        // Inicializa todos os status com 0
         for (NotaFiscalStatus s : NotaFiscalStatus.values()) {
             contagem.put(s.name(), 0L);
         }
-        // Preenche com os valores reais do banco
         List<Object[]> resultado = notaFiscalRepository.countByStatus();
         for (Object[] row : resultado) {
             NotaFiscalStatus status = (NotaFiscalStatus) row[0];
@@ -57,27 +54,45 @@ public class MonitorService {
         return contagem;
     }
 
-    /**
-     * Retorna informações das filas SQS.
-     */
+    public List<ClientMonitorEntity> getAllClientes() {
+        return clientRepository.findAll();
+    }
+
+    public List<ItemMonitorEntity> getAllItens() {
+        return itemRepository.findAll();
+    }
+
     public Map<String, SqsMonitorService.QueueInfo> getQueuesInfo() {
         return sqsMonitorService.getQueuesInfo();
     }
 
-    /**
-     * Agrega todos os dados para o dashboard.
-     */
+    public List<S3MonitorService.S3FileInfo> getS3Files() {
+        return s3MonitorService.listFiles();
+    }
+
+    public String getS3BucketName() {
+        return s3MonitorService.getBucketName();
+    }
+
     public DashboardData getDashboardData() {
         return new DashboardData(
                 getAllNotas(),
                 getContagemPorStatus(),
-                getQueuesInfo()
+                getQueuesInfo(),
+                getAllClientes(),
+                getAllItens(),
+                getS3Files(),
+                getS3BucketName()
         );
     }
 
     public record DashboardData(
             List<NotaFiscalMonitorEntity> notas,
             Map<String, Long> contagemPorStatus,
-            Map<String, SqsMonitorService.QueueInfo> filas
+            Map<String, SqsMonitorService.QueueInfo> filas,
+            List<ClientMonitorEntity> clientes,
+            List<ItemMonitorEntity> itens,
+            List<S3MonitorService.S3FileInfo> arquivosS3,
+            String bucketName
     ) {}
 }

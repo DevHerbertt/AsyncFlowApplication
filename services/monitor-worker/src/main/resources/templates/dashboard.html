@@ -72,6 +72,7 @@
 
         .status-PROCESSANDO .count { color: #facc15; }
         .status-VALIDADA    .count { color: #34d399; }
+        .status-INVALIDA    .count { color: #fb923c; }
         .status-SALVA       .count { color: #60a5fa; }
         .status-CONCLUIDA   .count { color: #a78bfa; }
         .status-ERRO        .count { color: #f87171; }
@@ -143,6 +144,7 @@
         }
         .badge-PROCESSANDO { background: #422006; color: #facc15; }
         .badge-VALIDADA    { background: #052e16; color: #34d399; }
+        .badge-INVALIDA    { background: #431407; color: #fb923c; }
         .badge-SALVA       { background: #172554; color: #60a5fa; }
         .badge-CONCLUIDA   { background: #2e1065; color: #a78bfa; }
         .badge-ERRO        { background: #450a0a; color: #f87171; }
@@ -150,6 +152,21 @@
         .s3-link { color: #38bdf8; text-decoration: none; font-size: 0.75rem; }
         .s3-link:hover { text-decoration: underline; }
         .no-data { color: #475569; font-style: italic; }
+
+        .table-wrapper { margin-bottom: 8px; }
+
+        .s3-bucket-badge {
+            display: inline-block;
+            background: #172554;
+            border: 1px solid #1e40af;
+            color: #60a5fa;
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 0.75rem;
+            margin-left: 10px;
+            text-transform: none;
+            letter-spacing: 0;
+        }
 
         /* ── Footer ── */
         footer {
@@ -206,8 +223,34 @@
         </div>
     </div>
 
+    <!-- ── Arquivos S3 ── -->
+    <div class="section-title">🗄️ Arquivos no S3 <span class="s3-bucket-badge" th:text="'bucket: ' + ${bucketName}">bucket</span></div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome do Arquivo</th>
+                    <th>Tamanho</th>
+                    <th>Última Modificação</th>
+                    <th>URL</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${#lists.isEmpty(arquivosS3)}">
+                    <td colspan="4" class="no-data" style="text-align:center; padding: 24px;">Nenhum arquivo encontrado no bucket S3.</td>
+                </tr>
+                <tr th:each="arquivo : ${arquivosS3}">
+                    <td th:text="${arquivo.nome}">-</td>
+                    <td th:text="${arquivo.tamanho}">-</td>
+                    <td th:text="${arquivo.ultimaModificacao}">-</td>
+                    <td><a th:href="${arquivo.url}" class="s3-link" target="_blank">📎 Abrir</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
     <!-- ── Tabela de Notas Fiscais ── -->
-    <div class="section-title">🗂️ Notas Fiscais Recentes</div>
+    <div class="section-title">🗂️ Notas Fiscais</div>
     <div class="table-wrapper">
         <table>
             <thead>
@@ -248,6 +291,58 @@
                         <span th:if="${nota.s3Url == null or nota.s3Url.isEmpty()}"
                               class="no-data">—</span>
                     </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ── Tabela de Clientes ── -->
+    <div class="section-title">👤 Clientes</div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>CPF</th>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>CEP</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${#lists.isEmpty(clientes)}">
+                    <td colspan="4" class="no-data" style="text-align:center; padding: 24px;">Nenhum cliente encontrado no banco de dados.</td>
+                </tr>
+                <tr th:each="cliente : ${clientes}">
+                    <td th:text="${cliente.cpf}">-</td>
+                    <td th:text="${cliente.name}">-</td>
+                    <td th:text="${cliente.email != null ? cliente.email : '-'}">-</td>
+                    <td th:text="${cliente.cep != null ? cliente.cep : '-'}">-</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ── Tabela de Itens ── -->
+    <div class="section-title">📦 Itens</div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Série</th>
+                    <th>Nome</th>
+                    <th>Preço</th>
+                    <th>Nota Fiscal</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${#lists.isEmpty(itens)}">
+                    <td colspan="4" class="no-data" style="text-align:center; padding: 24px;">Nenhum item encontrado no banco de dados.</td>
+                </tr>
+                <tr th:each="item : ${itens}">
+                    <td th:text="${item.serieNumber}">-</td>
+                    <td th:text="${item.name}">-</td>
+                    <td th:text="${item.price != null ? 'R$ ' + #numbers.formatDecimal(item.price, 1, 'POINT', 2, 'COMMA') : '-'}">-</td>
+                    <td th:text="${item.notaFiscalNumeroNota != null ? item.notaFiscalNumeroNota : '-'}">-</td>
                 </tr>
             </tbody>
         </table>
