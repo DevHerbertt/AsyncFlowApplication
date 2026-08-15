@@ -26,5 +26,6 @@
         <module>services/nota-api</module>
         <module>services/Validation-Worker</module>
         <module>services/Persistence-worker</module>
+        <module>services/monitor-worker</module>
     </modules>
 </project>

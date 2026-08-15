@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <!-- Auto-refresh a cada 10 segundos -->
+    <meta http-equiv="refresh" content="10"/>
+    <title>AsyncFlow - Monitor</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+            padding: 20px 32px;
+            border-bottom: 2px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        header h1 { font-size: 1.6rem; color: #38bdf8; letter-spacing: 1px; }
+        header h1 span { color: #94a3b8; font-size: 0.9rem; font-weight: normal; margin-left: 12px; }
+        .refresh-badge {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.78rem;
+            color: #64748b;
+        }
+        .refresh-badge b { color: #38bdf8; }
+
+        /* ── Layout ── */
+        main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+
+        /* ── Section titles ── */
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #64748b;
+            margin-bottom: 14px;
+            margin-top: 32px;
+        }
+
+        /* ── Cards de contagem por status ── */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 14px;
+            margin-bottom: 8px;
+        }
+        .status-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 18px 16px;
+            text-align: center;
+            transition: transform 0.15s;
+        }
+        .status-card:hover { transform: translateY(-2px); }
+        .status-card .count { font-size: 2.2rem; font-weight: 700; line-height: 1; }
+        .status-card .label { font-size: 0.72rem; color: #94a3b8; margin-top: 6px; letter-spacing: 1px; }
+
+        .status-PROCESSANDO .count { color: #facc15; }
+        .status-VALIDADA    .count { color: #34d399; }
+        .status-SALVA       .count { color: #60a5fa; }
+        .status-CONCLUIDA   .count { color: #a78bfa; }
+        .status-ERRO        .count { color: #f87171; }
+
+        /* ── Cards de filas SQS ── */
+        .filas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 14px;
+        }
+        .fila-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 18px 20px;
+        }
+        .fila-card .fila-nome {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #38bdf8;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .fila-card .fila-nome .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #22c55e;
+            display: inline-block;
+        }
+        .fila-card .dot.indisponivel { background: #ef4444; }
+        .fila-metrics { display: flex; gap: 16px; flex-wrap: wrap; }
+        .fila-metric { text-align: center; }
+        .fila-metric .val { font-size: 1.5rem; font-weight: 700; color: #e2e8f0; }
+        .fila-metric .lbl { font-size: 0.65rem; color: #64748b; letter-spacing: 1px; }
+
+        /* ── Tabela de notas ── */
+        .table-wrapper {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        thead { background: #0f172a; }
+        thead th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #64748b;
+            border-bottom: 1px solid #334155;
+        }
+        tbody tr { border-bottom: 1px solid #1e293b; transition: background 0.1s; }
+        tbody tr:hover { background: #263348; }
+        tbody td { padding: 11px 16px; color: #cbd5e1; }
+        tbody tr:last-child { border-bottom: none; }
+
+        /* Status badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .badge-PROCESSANDO { background: #422006; color: #facc15; }
+        .badge-VALIDADA    { background: #052e16; color: #34d399; }
+        .badge-SALVA       { background: #172554; color: #60a5fa; }
+        .badge-CONCLUIDA   { background: #2e1065; color: #a78bfa; }
+        .badge-ERRO        { background: #450a0a; color: #f87171; }
+
+        .s3-link { color: #38bdf8; text-decoration: none; font-size: 0.75rem; }
+        .s3-link:hover { text-decoration: underline; }
+        .no-data { color: #475569; font-style: italic; }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #334155;
+            font-size: 0.75rem;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>⚡ AsyncFlow Monitor <span>Observabilidade em tempo real</span></h1>
+    <div class="refresh-badge">Auto-refresh: <b>10s</b></div>
+</header>
+
+<main>
+
+    <!-- ── Contagem por Status ── -->
+    <div class="section-title">📊 Notas Fiscais por Status</div>
+    <div class="status-grid">
+        <div th:each="entry : ${contagem}"
+             th:classappend="'status-' + ${entry.key}"
+             class="status-card">
+            <div class="count" th:text="${entry.value}">0</div>
+            <div class="label" th:text="${entry.key}">STATUS</div>
+        </div>
+    </div>
+
+    <!-- ── Filas SQS ── -->
+    <div class="section-title">📨 Status das Filas SQS</div>
+    <div class="filas-grid">
+        <div th:each="fila : ${filas}" class="fila-card">
+            <div class="fila-nome">
+                <span th:classappend="${fila.status == 'OK'} ? 'dot' : 'dot indisponivel'" class="dot"></span>
+                <span th:text="${fila.nome}">fila-nome</span>
+            </div>
+            <div class="fila-metrics">
+                <div class="fila-metric">
+                    <div class="val" th:text="${fila.mensagensVisiveis}">0</div>
+                    <div class="lbl">VISÍVEIS</div>
+                </div>
+                <div class="fila-metric">
+                    <div class="val" th:text="${fila.mensagensEmProcessamento}">0</div>
+                    <div class="lbl">EM PROC.</div>
+                </div>
+                <div class="fila-metric">
+                    <div class="val" th:text="${fila.mensagensAtrasadas}">0</div>
+                    <div class="lbl">ATRASADAS</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Tabela de Notas Fiscais ── -->
+    <div class="section-title">🗂️ Notas Fiscais Recentes</div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Número da Nota</th>
+                    <th>Cliente (CPF)</th>
+                    <th>CNPJ Emitente</th>
+                    <th>Valor Total</th>
+                    <th>Data Compra</th>
+                    <th>Status</th>
+                    <th>Arquivo S3</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${#lists.isEmpty(notas)}">
+                    <td colspan="7" class="no-data" style="text-align:center; padding: 24px;">
+                        Nenhuma nota fiscal encontrada no banco de dados.
+                    </td>
+                </tr>
+                <tr th:each="nota : ${notas}">
+                    <td th:text="${nota.numeroNota}">-</td>
+                    <td th:text="${nota.clientCpf != null ? nota.clientCpf : '-'}">-</td>
+                    <td th:text="${nota.cnpj != null ? nota.cnpj : '-'}">-</td>
+                    <td th:text="${nota.totalValue != null ? 'R$ ' + #numbers.formatDecimal(nota.totalValue, 1, 'POINT', 2, 'COMMA') : '-'}">-</td>
+                    <td th:text="${nota.buyDate != null ? #temporals.format(nota.buyDate, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
+                    <td>
+                        <span th:if="${nota.status != null}"
+                              th:classappend="'badge-' + ${nota.status.name()}"
+                              class="badge"
+                              th:text="${nota.status.name()}">STATUS</span>
+                        <span th:if="${nota.status == null}" class="no-data">-</span>
+                    </td>
+                    <td>
+                        <a th:if="${nota.s3Url != null and !nota.s3Url.isEmpty()}"
+                           th:href="${nota.s3Url}"
+                           class="s3-link"
+                           target="_blank">📎 Ver arquivo</a>
+                        <span th:if="${nota.s3Url == null or nota.s3Url.isEmpty()}"
+                              class="no-data">—</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</main>
+
+<footer>
+    AsyncFlow Monitor Worker &bull; Porta 8083 &bull;
+    <a href="/swagger-ui/index.html" style="color:#38bdf8;">Swagger API</a>
+</footer>
+
+</body>
+</html>
