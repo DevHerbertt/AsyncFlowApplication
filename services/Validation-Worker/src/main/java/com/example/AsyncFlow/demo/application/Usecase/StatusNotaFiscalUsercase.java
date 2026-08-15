@@ -14,14 +14,26 @@ public class StatusNotaFiscalUsercase {
         this.repository = repository;
     }
 
-    public  NotaFiscalStatus execute(MessageRequest messageRequest){
-        System.out.println("execute NFUseCase iniciado");
+    /**
+     * Salva o status da nota fiscal no banco.
+     * Sobrecarga sem status: usa VALIDADA como padrão (compatibilidade).
+     */
+    public NotaFiscalStatus execute(MessageRequest messageRequest) {
+        return execute(messageRequest, NotaFiscalStatus.VALIDADA);
+    }
+
+    /**
+     * Salva o status informado para a nota fiscal no banco.
+     *
+     * @param messageRequest mensagem com a nota fiscal
+     * @param status         status a ser salvo (VALIDADA, INVALIDA, ERRO, etc.)
+     */
+    public NotaFiscalStatus execute(MessageRequest messageRequest, NotaFiscalStatus status) {
+        System.out.println("execute NFUseCase iniciado - status: " + status);
 
         String numeroNota = messageRequest.getNotaFiscal().getNumeroNota();
 
-        NotaFiscalStatus status = NotaFiscalStatus.VALIDADA;
-
-        System.out.println("execute NFUseCase finalizado");
-        return repository.saveStatus(numeroNota,status);
+        System.out.println("execute NFUseCase finalizado - nota: " + numeroNota);
+        return repository.saveStatus(numeroNota, status);
     }
 }
