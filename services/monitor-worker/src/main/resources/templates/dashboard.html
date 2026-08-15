@@ -3,348 +3,109 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <!-- Auto-refresh a cada 10 segundos -->
-    <meta http-equiv="refresh" content="10"/>
     <title>AsyncFlow - Monitor</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
-            min-height: 100vh;
-        }
-
-        /* ── Header ── */
-        header {
-            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
-            padding: 20px 32px;
-            border-bottom: 2px solid #334155;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+        header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 20px 32px; border-bottom: 2px solid #334155; display: flex; align-items: center; justify-content: space-between; }
         header h1 { font-size: 1.6rem; color: #38bdf8; letter-spacing: 1px; }
         header h1 span { color: #94a3b8; font-size: 0.9rem; font-weight: normal; margin-left: 12px; }
-        .refresh-badge {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 0.78rem;
-            color: #64748b;
-        }
-        .refresh-badge b { color: #38bdf8; }
-
-        /* ── Layout ── */
+        .live-badge { background: #052e16; border: 1px solid #166534; border-radius: 20px; padding: 6px 14px; font-size: 0.78rem; color: #4ade80; display: flex; align-items: center; gap: 6px; }
+        .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
         main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
-
-        /* ── Section titles ── */
-        .section-title {
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: #64748b;
-            margin-bottom: 14px;
-            margin-top: 32px;
-        }
-
-        /* ── Cards de contagem por status ── */
-        .status-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 14px;
-            margin-bottom: 8px;
-        }
-        .status-card {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 18px 16px;
-            text-align: center;
-            transition: transform 0.15s;
-        }
+        .section-title { font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #64748b; margin-bottom: 14px; margin-top: 32px; display: flex; align-items: center; gap: 8px; }
+        .status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; margin-bottom: 8px; }
+        .status-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 18px 16px; text-align: center; transition: transform 0.15s; }
         .status-card:hover { transform: translateY(-2px); }
         .status-card .count { font-size: 2.2rem; font-weight: 700; line-height: 1; }
         .status-card .label { font-size: 0.72rem; color: #94a3b8; margin-top: 6px; letter-spacing: 1px; }
-
-        .status-PROCESSANDO .count { color: #facc15; }
-        .status-VALIDADA    .count { color: #34d399; }
-        .status-INVALIDA    .count { color: #fb923c; }
-        .status-SALVA       .count { color: #60a5fa; }
-        .status-CONCLUIDA   .count { color: #a78bfa; }
-        .status-ERRO        .count { color: #f87171; }
-
-        /* ── Cards de filas SQS ── */
-        .filas-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 14px;
-        }
-        .fila-card {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 18px 20px;
-        }
-        .fila-card .fila-nome {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #38bdf8;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .fila-card .fila-nome .dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            background: #22c55e;
-            display: inline-block;
-        }
-        .fila-card .dot.indisponivel { background: #ef4444; }
+        .c-PROCESSANDO { color: #facc15; } .c-VALIDADA { color: #34d399; } .c-INVALIDA { color: #fb923c; }
+        .c-SALVA { color: #60a5fa; } .c-CONCLUIDA { color: #a78bfa; } .c-ERRO { color: #f87171; }
+        .filas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+        .fila-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 18px 20px; }
+        .fila-nome { font-size: 0.85rem; font-weight: 600; color: #38bdf8; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block; }
+        .dot.off { background: #ef4444; }
         .fila-metrics { display: flex; gap: 16px; flex-wrap: wrap; }
         .fila-metric { text-align: center; }
         .fila-metric .val { font-size: 1.5rem; font-weight: 700; color: #e2e8f0; }
         .fila-metric .lbl { font-size: 0.65rem; color: #64748b; letter-spacing: 1px; }
-
-        /* ── Tabela de notas ── */
-        .table-wrapper {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 12px;
-            overflow: hidden;
-        }
+        .table-wrapper { background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; margin-bottom: 8px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         thead { background: #0f172a; }
-        thead th {
-            padding: 12px 16px;
-            text-align: left;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: #64748b;
-            border-bottom: 1px solid #334155;
-        }
+        thead th { padding: 12px 16px; text-align: left; font-size: 0.7rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #64748b; border-bottom: 1px solid #334155; }
         tbody tr { border-bottom: 1px solid #1e293b; transition: background 0.1s; }
         tbody tr:hover { background: #263348; }
         tbody td { padding: 11px 16px; color: #cbd5e1; }
         tbody tr:last-child { border-bottom: none; }
-
-        /* Status badges */
-        .badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-        .badge-PROCESSANDO { background: #422006; color: #facc15; }
-        .badge-VALIDADA    { background: #052e16; color: #34d399; }
-        .badge-INVALIDA    { background: #431407; color: #fb923c; }
-        .badge-SALVA       { background: #172554; color: #60a5fa; }
-        .badge-CONCLUIDA   { background: #2e1065; color: #a78bfa; }
-        .badge-ERRO        { background: #450a0a; color: #f87171; }
-
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
+        .b-PROCESSANDO { background: #422006; color: #facc15; } .b-VALIDADA { background: #052e16; color: #34d399; }
+        .b-INVALIDA { background: #431407; color: #fb923c; } .b-SALVA { background: #172554; color: #60a5fa; }
+        .b-CONCLUIDA { background: #2e1065; color: #a78bfa; } .b-ERRO { background: #450a0a; color: #f87171; }
         .s3-link { color: #38bdf8; text-decoration: none; font-size: 0.75rem; }
         .s3-link:hover { text-decoration: underline; }
         .no-data { color: #475569; font-style: italic; }
-
-        .table-wrapper { margin-bottom: 8px; }
-
-        .s3-bucket-badge {
-            display: inline-block;
-            background: #172554;
-            border: 1px solid #1e40af;
-            color: #60a5fa;
-            border-radius: 20px;
-            padding: 4px 14px;
-            font-size: 0.75rem;
-            margin-left: 10px;
-            text-transform: none;
-            letter-spacing: 0;
-        }
-
-        /* ── Footer ── */
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: #334155;
-            font-size: 0.75rem;
-            margin-top: 40px;
-        }
+        .bucket-badge { display: inline-block; background: #172554; border: 1px solid #1e40af; color: #60a5fa; border-radius: 20px; padding: 3px 12px; font-size: 0.72rem; margin-left: 8px; text-transform: none; letter-spacing: 0; }
+        .last-update { font-size: 0.7rem; color: #475569; margin-left: auto; }
+        footer { text-align: center; padding: 20px; color: #334155; font-size: 0.75rem; margin-top: 40px; }
+        .empty-row td { text-align: center; padding: 24px; }
     </style>
 </head>
 <body>
 
 <header>
     <h1>⚡ AsyncFlow Monitor <span>Observabilidade em tempo real</span></h1>
-    <div class="refresh-badge">Auto-refresh: <b>10s</b></div>
+    <div class="live-badge"><span class="live-dot"></span> LIVE</div>
 </header>
 
 <main>
 
-    <!-- ── Contagem por Status ── -->
-    <div class="section-title">📊 Notas Fiscais por Status</div>
-    <div class="status-grid">
-        <div th:each="entry : ${contagem}"
-             th:classappend="'status-' + ${entry.key}"
-             class="status-card">
-            <div class="count" th:text="${entry.value}">0</div>
-            <div class="label" th:text="${entry.key}">STATUS</div>
-        </div>
+    <!-- ── Status Cards ── -->
+    <div class="section-title">📊 Notas Fiscais por Status <span class="last-update" id="lastUpdate"></span></div>
+    <div class="status-grid" id="statusGrid">
+        <div class="status-card"><div class="count">—</div><div class="label">Carregando...</div></div>
     </div>
 
     <!-- ── Filas SQS ── -->
     <div class="section-title">📨 Status das Filas SQS</div>
-    <div class="filas-grid">
-        <div th:each="fila : ${filas}" class="fila-card">
-            <div class="fila-nome">
-                <span th:classappend="${fila.status == 'OK'} ? 'dot' : 'dot indisponivel'" class="dot"></span>
-                <span th:text="${fila.nome}">fila-nome</span>
-            </div>
-            <div class="fila-metrics">
-                <div class="fila-metric">
-                    <div class="val" th:text="${fila.mensagensVisiveis}">0</div>
-                    <div class="lbl">VISÍVEIS</div>
-                </div>
-                <div class="fila-metric">
-                    <div class="val" th:text="${fila.mensagensEmProcessamento}">0</div>
-                    <div class="lbl">EM PROC.</div>
-                </div>
-                <div class="fila-metric">
-                    <div class="val" th:text="${fila.mensagensAtrasadas}">0</div>
-                    <div class="lbl">ATRASADAS</div>
-                </div>
-            </div>
-        </div>
+    <div class="filas-grid" id="filasGrid">
+        <div class="fila-card"><div class="fila-nome">Carregando...</div></div>
     </div>
 
-    <!-- ── Arquivos S3 ── -->
-    <div class="section-title">🗄️ Arquivos no S3 <span class="s3-bucket-badge" th:text="'bucket: ' + ${bucketName}">bucket</span></div>
+    <!-- ── S3 ── -->
+    <div class="section-title">🗄️ Arquivos no S3 <span class="bucket-badge" id="bucketName">notas-fiscais-bucket</span></div>
     <div class="table-wrapper">
         <table>
-            <thead>
-                <tr>
-                    <th>Nome do Arquivo</th>
-                    <th>Tamanho</th>
-                    <th>Última Modificação</th>
-                    <th>URL</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:if="${#lists.isEmpty(arquivosS3)}">
-                    <td colspan="4" class="no-data" style="text-align:center; padding: 24px;">Nenhum arquivo encontrado no bucket S3.</td>
-                </tr>
-                <tr th:each="arquivo : ${arquivosS3}">
-                    <td th:text="${arquivo.nome}">-</td>
-                    <td th:text="${arquivo.tamanho}">-</td>
-                    <td th:text="${arquivo.ultimaModificacao}">-</td>
-                    <td><a th:href="${arquivo.url}" class="s3-link" target="_blank">📎 Abrir</a></td>
-                </tr>
-            </tbody>
+            <thead><tr><th>Nome do Arquivo</th><th>Tamanho</th><th>Última Modificação</th><th>URL</th></tr></thead>
+            <tbody id="s3Body"><tr class="empty-row"><td colspan="4" class="no-data">Carregando...</td></tr></tbody>
         </table>
     </div>
 
-    <!-- ── Tabela de Notas Fiscais ── -->
+    <!-- ── Notas Fiscais ── -->
     <div class="section-title">🗂️ Notas Fiscais</div>
     <div class="table-wrapper">
         <table>
-            <thead>
-                <tr>
-                    <th>Número da Nota</th>
-                    <th>Cliente (CPF)</th>
-                    <th>CNPJ Emitente</th>
-                    <th>Valor Total</th>
-                    <th>Data Compra</th>
-                    <th>Status</th>
-                    <th>Arquivo S3</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:if="${#lists.isEmpty(notas)}">
-                    <td colspan="7" class="no-data" style="text-align:center; padding: 24px;">
-                        Nenhuma nota fiscal encontrada no banco de dados.
-                    </td>
-                </tr>
-                <tr th:each="nota : ${notas}">
-                    <td th:text="${nota.numeroNota}">-</td>
-                    <td th:text="${nota.clientCpf != null ? nota.clientCpf : '-'}">-</td>
-                    <td th:text="${nota.cnpj != null ? nota.cnpj : '-'}">-</td>
-                    <td th:text="${nota.totalValue != null ? 'R$ ' + #numbers.formatDecimal(nota.totalValue, 1, 'POINT', 2, 'COMMA') : '-'}">-</td>
-                    <td th:text="${nota.buyDate != null ? #temporals.format(nota.buyDate, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
-                    <td>
-                        <span th:if="${nota.status != null}"
-                              th:classappend="'badge-' + ${nota.status.name()}"
-                              class="badge"
-                              th:text="${nota.status.name()}">STATUS</span>
-                        <span th:if="${nota.status == null}" class="no-data">-</span>
-                    </td>
-                    <td>
-                        <a th:if="${nota.s3Url != null and !nota.s3Url.isEmpty()}"
-                           th:href="${nota.s3Url}"
-                           class="s3-link"
-                           target="_blank">📎 Ver arquivo</a>
-                        <span th:if="${nota.s3Url == null or nota.s3Url.isEmpty()}"
-                              class="no-data">—</span>
-                    </td>
-                </tr>
-            </tbody>
+            <thead><tr><th>Número da Nota</th><th>CPF Cliente</th><th>CNPJ</th><th>Valor Total</th><th>Data Compra</th><th>Status</th><th>Arquivo S3</th></tr></thead>
+            <tbody id="notasBody"><tr class="empty-row"><td colspan="7" class="no-data">Carregando...</td></tr></tbody>
         </table>
     </div>
 
-    <!-- ── Tabela de Clientes ── -->
+    <!-- ── Clientes ── -->
     <div class="section-title">👤 Clientes</div>
     <div class="table-wrapper">
         <table>
-            <thead>
-                <tr>
-                    <th>CPF</th>
-                    <th>Nome</th>
-                    <th>Email</th>
-                    <th>CEP</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:if="${#lists.isEmpty(clientes)}">
-                    <td colspan="4" class="no-data" style="text-align:center; padding: 24px;">Nenhum cliente encontrado no banco de dados.</td>
-                </tr>
-                <tr th:each="cliente : ${clientes}">
-                    <td th:text="${cliente.cpf}">-</td>
-                    <td th:text="${cliente.name}">-</td>
-                    <td th:text="${cliente.email != null ? cliente.email : '-'}">-</td>
-                    <td th:text="${cliente.cep != null ? cliente.cep : '-'}">-</td>
-                </tr>
-            </tbody>
+            <thead><tr><th>CPF</th><th>Nome</th><th>Email</th><th>CEP</th></tr></thead>
+            <tbody id="clientesBody"><tr class="empty-row"><td colspan="4" class="no-data">Carregando...</td></tr></tbody>
         </table>
     </div>
 
-    <!-- ── Tabela de Itens ── -->
+    <!-- ── Itens ── -->
     <div class="section-title">📦 Itens</div>
     <div class="table-wrapper">
         <table>
-            <thead>
-                <tr>
-                    <th>Série</th>
-                    <th>Nome</th>
-                    <th>Preço</th>
-                    <th>Nota Fiscal</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:if="${#lists.isEmpty(itens)}">
-                    <td colspan="4" class="no-data" style="text-align:center; padding: 24px;">Nenhum item encontrado no banco de dados.</td>
-                </tr>
-                <tr th:each="item : ${itens}">
-                    <td th:text="${item.serieNumber}">-</td>
-                    <td th:text="${item.name}">-</td>
-                    <td th:text="${item.price != null ? 'R$ ' + #numbers.formatDecimal(item.price, 1, 'POINT', 2, 'COMMA') : '-'}">-</td>
-                    <td th:text="${item.notaFiscalNumeroNota != null ? item.notaFiscalNumeroNota : '-'}">-</td>
-                </tr>
-            </tbody>
+            <thead><tr><th>Série</th><th>Nome</th><th>Preço</th><th>Nota Fiscal</th></tr></thead>
+            <tbody id="itensBody"><tr class="empty-row"><td colspan="4" class="no-data">Carregando...</td></tr></tbody>
         </table>
     </div>
 
@@ -354,6 +115,149 @@
     AsyncFlow Monitor Worker &bull; Porta 8083 &bull;
     <a href="/swagger-ui/index.html" style="color:#38bdf8;">Swagger API</a>
 </footer>
+
+<script>
+    const STATUS_COLORS = {
+        PROCESSANDO: 'c-PROCESSANDO', VALIDADA: 'c-VALIDADA', INVALIDA: 'c-INVALIDA',
+        SALVA: 'c-SALVA', CONCLUIDA: 'c-CONCLUIDA', ERRO: 'c-ERRO'
+    };
+    const BADGE_COLORS = {
+        PROCESSANDO: 'b-PROCESSANDO', VALIDADA: 'b-VALIDADA', INVALIDA: 'b-INVALIDA',
+        SALVA: 'b-SALVA', CONCLUIDA: 'b-CONCLUIDA', ERRO: 'b-ERRO'
+    };
+
+    function fmt(val) { return val != null ? val : '—'; }
+    function fmtMoney(val) { return val != null ? 'R$ ' + Number(val).toLocaleString('pt-BR', {minimumFractionDigits:2}) : '—'; }
+    function fmtDate(val) {
+        if (!val) return '—';
+        const d = new Date(val);
+        return d.toLocaleString('pt-BR');
+    }
+
+    async function fetchDashboard() {
+        try {
+            const res = await fetch('/api/monitor/dashboard');
+            if (!res.ok) return;
+            const data = await res.json();
+            renderStatus(data.contagemPorStatus);
+            renderFilas(data.filas);
+            renderS3(data.arquivosS3, data.bucketName);
+            renderNotas(data.notas);
+            renderClientes(data.clientes);
+            renderItens(data.itens);
+            document.getElementById('lastUpdate').textContent = 'Atualizado: ' + new Date().toLocaleTimeString('pt-BR');
+        } catch(e) {
+            console.error('Erro ao buscar dados:', e);
+        }
+    }
+
+    function renderStatus(contagem) {
+        if (!contagem) return;
+        const grid = document.getElementById('statusGrid');
+        const entries = Object.entries(contagem);
+        if (entries.length === 0) { grid.innerHTML = '<div class="status-card"><div class="count no-data">0</div><div class="label">Sem dados</div></div>'; return; }
+        grid.innerHTML = entries.map(([k, v]) =>
+            `<div class="status-card">
+                <div class="count ${STATUS_COLORS[k] || ''}">${v}</div>
+                <div class="label">${k}</div>
+            </div>`
+        ).join('');
+    }
+
+    function renderFilas(filas) {
+        if (!filas) return;
+        const grid = document.getElementById('filasGrid');
+        const entries = Object.entries(filas);
+        if (entries.length === 0) { grid.innerHTML = '<div class="fila-card"><div class="fila-nome">Nenhuma fila encontrada</div></div>'; return; }
+        grid.innerHTML = entries.map(([, f]) =>
+            `<div class="fila-card">
+                <div class="fila-nome">
+                    <span class="dot ${f.status === 'OK' ? '' : 'off'}"></span>
+                    ${f.nome}
+                </div>
+                <div class="fila-metrics">
+                    <div class="fila-metric"><div class="val">${f.mensagensVisiveis}</div><div class="lbl">VISÍVEIS</div></div>
+                    <div class="fila-metric"><div class="val">${f.mensagensEmProcessamento}</div><div class="lbl">EM PROC.</div></div>
+                    <div class="fila-metric"><div class="val">${f.mensagensAtrasadas}</div><div class="lbl">ATRASADAS</div></div>
+                </div>
+            </div>`
+        ).join('');
+    }
+
+    function renderS3(arquivos, bucket) {
+        if (bucket) document.getElementById('bucketName').textContent = 'bucket: ' + bucket;
+        const tbody = document.getElementById('s3Body');
+        if (!arquivos || arquivos.length === 0) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="4" class="no-data">Nenhum arquivo no bucket S3.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = arquivos.map(a =>
+            `<tr>
+                <td>${fmt(a.nome)}</td>
+                <td>${fmt(a.tamanho)}</td>
+                <td>${fmt(a.ultimaModificacao)}</td>
+                <td><a href="${a.url}" class="s3-link" target="_blank">📎 Abrir</a></td>
+            </tr>`
+        ).join('');
+    }
+
+    function renderNotas(notas) {
+        const tbody = document.getElementById('notasBody');
+        if (!notas || notas.length === 0) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="7" class="no-data">Nenhuma nota fiscal no banco.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = notas.map(n => {
+            const badge = n.status ? `<span class="badge ${BADGE_COLORS[n.status] || ''}">${n.status}</span>` : '—';
+            const s3 = n.s3Url ? `<a href="${n.s3Url}" class="s3-link" target="_blank">📎 Ver</a>` : '<span class="no-data">—</span>';
+            return `<tr>
+                <td>${fmt(n.numeroNota)}</td>
+                <td>${fmt(n.clientCpf)}</td>
+                <td>${fmt(n.cnpj)}</td>
+                <td>${fmtMoney(n.totalValue)}</td>
+                <td>${fmtDate(n.buyDate)}</td>
+                <td>${badge}</td>
+                <td>${s3}</td>
+            </tr>`;
+        }).join('');
+    }
+
+    function renderClientes(clientes) {
+        const tbody = document.getElementById('clientesBody');
+        if (!clientes || clientes.length === 0) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="4" class="no-data">Nenhum cliente no banco.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = clientes.map(c =>
+            `<tr>
+                <td>${fmt(c.cpf)}</td>
+                <td>${fmt(c.name)}</td>
+                <td>${fmt(c.email)}</td>
+                <td>${fmt(c.cep)}</td>
+            </tr>`
+        ).join('');
+    }
+
+    function renderItens(itens) {
+        const tbody = document.getElementById('itensBody');
+        if (!itens || itens.length === 0) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="4" class="no-data">Nenhum item no banco.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = itens.map(i =>
+            `<tr>
+                <td>${fmt(i.serieNumber)}</td>
+                <td>${fmt(i.name)}</td>
+                <td>${fmtMoney(i.price)}</td>
+                <td>${fmt(i.notaFiscalNumeroNota)}</td>
+            </tr>`
+        ).join('');
+    }
+
+    // Busca imediata e depois a cada 5 segundos
+    fetchDashboard();
+    setInterval(fetchDashboard, 5000);
+</script>
 
 </body>
 </html>
