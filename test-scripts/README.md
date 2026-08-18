@@ -2,7 +2,7 @@
 
 ## `send-test-messages.py`
 
-Script Python que envia mensagens de teste para as filas SQS do LocalStack, cobrindo os dois workers:
+Script java que envia mensagens de teste para as filas SQS do LocalStack, cobrindo os dois workers:
 
 | Worker              | Fila de entrada    | O que testa                                      |
 |---------------------|--------------------|--------------------------------------------------|
